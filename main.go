@@ -34,6 +34,7 @@ func Database() *gorm.DB {
 
 func main() {
 	db := Database()
+	db.AutoMigrate(&Client{})
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&AccessToken{})
 
@@ -43,22 +44,60 @@ func main() {
 	router.POST("/api/v1/auth/register", userRegistration)
 
 	v1 := router.Group("/api/v1")
-	v1.Use(TokenMiddleware)
+	v1.Use(BeforeMiddleware, TokenMiddleware)
 	{
 		v1.GET("/user", userProfile)
 	}
-
 	router.Run()
 }
 
-func userProfile(c *gin.Context) {
+// "Before Middleware"
+func BeforeMiddleware(c *gin.Context) {
+	db := Database()
+	var client Client
+	secret := c.Param("client_secret")
+	key := c.Param("client_key")
 
+	db.Where("client_secret = ? and client_key = ?", secret, key).First(&client)
+	fmt.Println(client)
 }
 
+// "Token Middleware"
 func TokenMiddleware(c *gin.Context) {
-	fmt.Println("dummy")
-	c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"msg": "error"})
-	// c.Next()
+	jwtString := c.GetHeader("Authorization")
+	token, err := jwt.Parse(jwtString, keyFn)
+	claims, ok := token.Claims.(jwt.MapClaims)
+
+	nowDate := time.Now().Format(dateFormat)
+	var tokenDate = claims["expires_at"].(string)
+	cnvTokenDate, _ := time.Parse(dateFormat, tokenDate)
+	cnvNowDate, _ := time.Parse(dateFormat, nowDate)
+	isTokenExpired := cnvNowDate.After(cnvTokenDate)
+
+	fmt.Printf("date now %s \n", nowDate)
+	fmt.Printf("date token %s \n", tokenDate)
+
+	if err == nil && ok && token.Valid {
+		if isTokenExpired {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "token already expired"})
+			return
+		}
+		c.Next()
+	} else {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"msg": "invalid token"})
+		return
+	}
+}
+
+func keyFn(token *jwt.Token) (interface{}, error) {
+	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+	}
+	return []byte("Base"), nil
+}
+
+func userProfile(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"msg": "ok"})
 }
 
 func loginHandler(c *gin.Context) {
@@ -66,7 +105,7 @@ func loginHandler(c *gin.Context) {
 	var user User
 	_pass := []byte(c.PostForm("password"))
 	fmt.Println(c.PostForm("email"))
-	db.Where("email=?", c.PostForm("email")).First(&user)
+	db.Where("email = ?", c.PostForm("email")).First(&user)
 
 	if user.ID == 0 {
 		c.JSON(http.StatusForbidden, gin.H{"msg": "Incorrect email"})
@@ -86,7 +125,7 @@ func loginHandler(c *gin.Context) {
 	claims["role"] = "admin"
 	claims["id"] = "13121"
 	claims["email"] = ValidEmail
-	expiryDate := time.Now().Add(time.Minute * 5).Format(dateFormat)
+	expiryDate := time.Now().Add(time.Minute * 5).Format(dateFormat) // add 5 minutes
 	claims["expires_at"] = expiryDate
 
 	tokenString, _ := token.SignedString(mySigningKey)
@@ -96,14 +135,13 @@ func loginHandler(c *gin.Context) {
 		"expires_at":   expiryDate,
 	})
 
-	// accessToken := AccessToken{
-	// 	Token:      tokenString,
-	// 	Expires_At: expiryDate,
-	// 	Created_At: time.Now(),
-	// }
+	accessToken := AccessToken{
+		UserID:    user.ID,
+		Token:     tokenString,
+		ExpiresAt: expiryDate,
+	}
 
-	// db := Database()
-	// db.Save(&accessToken)
+	db.Save(&accessToken)
 }
 
 func userRegistration(c *gin.Context) {
@@ -133,7 +171,6 @@ func userRegistration(c *gin.Context) {
 // "User Model"
 type User struct {
 	gorm.Model
-	ID       int    `form:"userid" json:"userid" binding:"required"`
 	Type     string `json:"auth_type"`
 	Email    string `form:"email" json:"email" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
@@ -142,10 +179,17 @@ type User struct {
 	Remember string `json:"remember_token"`
 }
 
+// "AccessToken Model"
 type AccessToken struct {
-	ID         int    `json:"id"`
-	User_Id    int    `json:"user_id"`
-	Token      string `json:"token"`
-	Expires_At string `json:"expires_at"`
-	Created_At time.Time
+	gorm.Model
+	UserID    uint   `json:"user_id"`
+	Token     string `json:"token"`
+	ExpiresAt string `json:"expires_at"`
+}
+
+// "Client Model"
+type Client struct {
+	gorm.Model
+	ClientKey    string `json:"client_key"`
+	ClientSecret string `json:"client_secret"`
 }
