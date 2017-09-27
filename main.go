@@ -27,6 +27,7 @@ func main() {
 	db.AutoMigrate(&Client{})
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&AccessToken{})
+	db.AutoMigrate(&UserProfile{})
 
 	router := gin.Default()
 

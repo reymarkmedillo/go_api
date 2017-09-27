@@ -13,7 +13,21 @@ func userProfile(c *gin.Context) {
 	jwtString := c.GetHeader("Authorization")
 	token, _ := jwt.Parse(jwtString, keyFn)
 	claims, _ := token.Claims.(jwt.MapClaims)
-	c.JSON(http.StatusOK, gin.H{"user": claims})
+
+	db := Database()
+	type Result struct {
+		Email         string
+		FirstName     string
+		LastName      string
+		Address       string
+		Premium       int
+		PaymentMethod string
+	}
+	var result Result
+	db.Table("users").Select("users.email, user_profiles.first_name, user_profiles.last_name,user_profiles.address,user_profiles.premium,user_profiles.payment_method").Joins("LEFT JOIN user_profiles on user_profiles.user_id = users.id").Where("email = ?", claims["email"]).First(&result)
+
+	c.JSON(http.StatusOK, gin.H{"user": result})
+
 }
 
 func loginHandler(c *gin.Context) {
@@ -40,7 +54,7 @@ func loginHandler(c *gin.Context) {
 	claims["role"] = user.Role
 	claims["id"] = user.ID
 	claims["email"] = c.PostForm("email")
-	expiryDate := time.Now().Add(time.Minute * 30).Format(dateFormat) // add 30 minutes
+	expiryDate := time.Now().Add(time.Hour * 5).Format(dateFormat) // add 5 hours
 	claims["expires_at"] = expiryDate
 
 	tokenString, _ := token.SignedString(mySigningKey)

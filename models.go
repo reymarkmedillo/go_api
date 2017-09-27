@@ -27,3 +27,13 @@ type Client struct {
 	ClientKey    string `json:"client_key"`
 	ClientSecret string `json:"client_secret"`
 }
+
+type UserProfile struct {
+	gorm.Model
+	UserID        uint   `json:"user_id" gorm:"joins:users;on:id"`
+	FirstName     string `json:"first_name"`
+	LastName      string `json:"last_name"`
+	Address       string `json:"address"`
+	Premium       int    `json:"premium"`
+	PaymentMethod string `json:"payment_method"`
+}
