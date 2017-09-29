@@ -12,6 +12,7 @@ func searchCases(c *gin.Context) {
 	grs := []Case{}
 	title := []Case{}
 	syllabus := []Case{}
+	topic := []Case{}
 
 	var buffer bytes.Buffer
 	search := c.PostForm("search")
@@ -26,6 +27,10 @@ func searchCases(c *gin.Context) {
 	db.Table("cases").Where("title LIKE ?", buffer.String()).Scan(&title)
 	// SEARCH IN SYLLABUS
 	db.Table("cases").Where("syllabus LIKE ?", buffer.String()).Scan(&syllabus)
+	// SEARCH IN TOPIC
+	db.Table("cases").Where("topic LIKE ?", buffer.String()).Scan(&topic)
 
-	c.JSON(http.StatusOK, gin.H{"gr": grs, "title": title, "syllabus": syllabus})
+	result := append(topic, syllabus...)
+
+	c.JSON(http.StatusOK, gin.H{"result": result})
 }
