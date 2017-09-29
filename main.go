@@ -24,10 +24,7 @@ func Database() *gorm.DB {
 
 func main() {
 	db := Database()
-	db.AutoMigrate(&Client{})
-	db.AutoMigrate(&User{})
-	db.AutoMigrate(&AccessToken{})
-	db.AutoMigrate(&UserProfile{})
+	db.AutoMigrate(&Client{}, &User{}, &AccessToken{}, &UserProfile{}, &Case{})
 
 	router := gin.Default()
 
@@ -38,6 +35,7 @@ func main() {
 	v1.Use(BeforeMiddleware, TokenMiddleware)
 	{
 		v1.GET("/user", userProfile)
+		v1.POST("/case/search", searchCases)
 	}
 	router.Run()
 }

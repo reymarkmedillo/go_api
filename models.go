@@ -37,3 +37,25 @@ type UserProfile struct {
 	Premium       int    `json:"premium"`
 	PaymentMethod string `json:"payment_method"`
 }
+
+type Case struct {
+	gorm.Model
+	Title    string `gorm:"type:mediumtext"`
+	Scra     string `gorm:"type:text"`
+	Grno     string
+	Date     string `gorm:"type:date"`
+	Topic    string `gorm:"type:mediumtext"`
+	Syllabus string `gorm:"type:longtext"`
+	Body     string `gorm:"type:longtext"`
+	Status   string `gorm:"type:text"`
+}
+
+// "MODEL FOR RESULTS ..."
+type UserProfileResult struct {
+	Email         string
+	FirstName     string
+	LastName      string
+	Address       string
+	Premium       int
+	PaymentMethod string
+}

@@ -15,19 +15,10 @@ func userProfile(c *gin.Context) {
 	claims, _ := token.Claims.(jwt.MapClaims)
 
 	db := Database()
-	type Result struct {
-		Email         string
-		FirstName     string
-		LastName      string
-		Address       string
-		Premium       int
-		PaymentMethod string
-	}
-	var result Result
+	var result UserProfileResult
 	db.Table("users").Select("users.email, user_profiles.first_name, user_profiles.last_name,user_profiles.address,user_profiles.premium,user_profiles.payment_method").Joins("LEFT JOIN user_profiles on user_profiles.user_id = users.id").Where("email = ?", claims["email"]).First(&result)
 
 	c.JSON(http.StatusOK, gin.H{"user": result})
-
 }
 
 func loginHandler(c *gin.Context) {
