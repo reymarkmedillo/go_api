@@ -36,6 +36,9 @@ func main() {
 	{
 		v1.GET("/user", userProfile)
 		v1.POST("/case/search", searchCases)
+		v1.GET("/case/view/:case_id", viewCase)
+		// "CASE DRAFTS"
+		v1.POST("/drafts/case/create", createDraftCase)
 	}
 	router.Run()
 }

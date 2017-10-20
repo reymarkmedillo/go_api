@@ -13,6 +13,7 @@ func searchCases(c *gin.Context) {
 	title := []Case{}
 	syllabus := []Case{}
 	topic := []Case{}
+	tempResult := []Case{}
 	result := []Case{}
 
 	var buffer bytes.Buffer
@@ -31,10 +32,39 @@ func searchCases(c *gin.Context) {
 	// SEARCH IN TOPIC
 	db.Table("cases").Where("topic LIKE ?", buffer.String()).Scan(&topic)
 
-	result = append(result, syllabus...)
-	result = append(result, title...)
-	result = append(result, topic...)
-	result = append(result, grs...)
+	tempResult = append(tempResult, syllabus...)
+	tempResult = append(tempResult, title...)
+	tempResult = append(tempResult, topic...)
+	tempResult = append(tempResult, grs...)
+
+	encountered := map[uint]bool{}
+
+	for _, v := range tempResult {
+		if encountered[v.ID] == true {
+
+		} else {
+			encountered[v.ID] = true
+			result = append(result, v)
+		}
+	}
 
 	c.JSON(http.StatusOK, gin.H{"result": result})
+}
+
+func viewCase(c *gin.Context) {
+	db := Database()
+	var caseResult Case
+
+	id := c.Param("case_id")
+	db.Table("cases").Where("id = ?", id).First(&caseResult)
+
+	if caseResult.ID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "Record not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"result": caseResult})
+}
+
+func createDraftCase(c *gin.Context) {
+
 }
