@@ -24,7 +24,7 @@ func Database() *gorm.DB {
 
 func main() {
 	db := Database()
-	db.AutoMigrate(&Client{}, &User{}, &AccessToken{}, &UserProfile{}, &Case{})
+	db.AutoMigrate(&Client{}, &User{}, &AccessToken{}, &UserProfile{}, &Case{}, &CaseGroup{})
 
 	router := gin.Default()
 

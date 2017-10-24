@@ -14,6 +14,8 @@ func searchCases(c *gin.Context) {
 	syllabus := []Case{}
 	topic := []Case{}
 	tempResult := []Case{}
+	casegroup := []Case{}
+
 	result := []Case{}
 
 	var buffer bytes.Buffer
@@ -31,11 +33,14 @@ func searchCases(c *gin.Context) {
 	db.Table("cases").Where("syllabus LIKE ?", buffer.String()).Scan(&syllabus)
 	// SEARCH IN TOPIC
 	db.Table("cases").Where("topic LIKE ?", buffer.String()).Scan(&topic)
+	// SEARCH IN CASE GROUP
+	db.Table("case_groups").Where("refno LIKE ?", buffer.String()).Joins("left join cases as c on c.id = case_groups.case_id").Select("case_groups.title, case_id as id, refno as grno, c.scra, c.date, c.topic, c.syllabus,c.body,c.status").Scan(&casegroup)
 
 	tempResult = append(tempResult, syllabus...)
 	tempResult = append(tempResult, title...)
 	tempResult = append(tempResult, topic...)
 	tempResult = append(tempResult, grs...)
+	tempResult = append(tempResult, casegroup...)
 
 	encountered := map[uint]bool{}
 
@@ -66,5 +71,6 @@ func viewCase(c *gin.Context) {
 }
 
 func createDraftCase(c *gin.Context) {
-
+	db := Database()
+	newcase := Case{}
 }

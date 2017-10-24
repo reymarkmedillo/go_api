@@ -50,6 +50,13 @@ type Case struct {
 	Status   string `gorm:"type:text"`
 }
 
+type CaseGroup struct {
+	gorm.Model
+	CaseID uint   `gorm:"type:int;size:11"`
+	Refno  string `gorm:"type:text"`
+	Title  string `gorm:"type:mediumtext"`
+}
+
 // "MODEL FOR RESULTS ..."
 type UserProfileResult struct {
 	Email         string

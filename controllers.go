@@ -45,7 +45,7 @@ func loginHandler(c *gin.Context) {
 	claims["role"] = user.Role
 	claims["id"] = user.ID
 	claims["email"] = c.PostForm("email")
-	expiryDate := time.Now().Add(time.Hour * 5).Format(dateFormat) // add 5 hours
+	expiryDate := time.Now().Add(time.Hour * 16).Format(dateFormat) // add 16 hours
 	claims["expires_at"] = expiryDate
 
 	tokenString, _ := token.SignedString(mySigningKey)
