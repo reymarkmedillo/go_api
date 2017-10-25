@@ -50,6 +50,22 @@ type Case struct {
 	Status   string `gorm:"type:text"`
 }
 
+type CaseResult struct {
+	gorm.Model
+	Title    string
+	Scra     string
+	Grno     string
+	Date     string
+	Topic    string
+	Syllabus string
+	Body     string
+	Status   string
+	Children []struct {
+		refno string
+		title string
+	}
+}
+
 type CaseGroup struct {
 	gorm.Model
 	CaseID uint   `gorm:"type:int;size:11"`

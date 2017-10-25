@@ -9,14 +9,14 @@ import (
 
 func searchCases(c *gin.Context) {
 	db := Database()
-	grs := []Case{}
-	title := []Case{}
-	syllabus := []Case{}
-	topic := []Case{}
-	tempResult := []Case{}
-	casegroup := []Case{}
+	grs := []CaseResult{}
+	title := []CaseResult{}
+	syllabus := []CaseResult{}
+	topic := []CaseResult{}
+	tempResult := []CaseResult{}
+	casegroup := []CaseResult{}
 
-	result := []Case{}
+	result := []CaseResult{}
 
 	var buffer bytes.Buffer
 	search := c.PostForm("search")
@@ -71,6 +71,6 @@ func viewCase(c *gin.Context) {
 }
 
 func createDraftCase(c *gin.Context) {
-	db := Database()
-	newcase := Case{}
+	// db := Database()
+	// newcase := Case{}
 }
