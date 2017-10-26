@@ -2,9 +2,9 @@ package main
 
 import (
 	"bytes"
-	"net/http"
-
+	// "fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func searchCases(c *gin.Context) {
@@ -15,6 +15,7 @@ func searchCases(c *gin.Context) {
 	topic := []CaseResult{}
 	tempResult := []CaseResult{}
 	casegroup := []CaseResult{}
+	childs := []Children{}
 
 	result := []CaseResult{}
 
@@ -34,7 +35,7 @@ func searchCases(c *gin.Context) {
 	// SEARCH IN TOPIC
 	db.Table("cases").Where("topic LIKE ?", buffer.String()).Scan(&topic)
 	// SEARCH IN CASE GROUP
-	db.Table("case_groups").Where("refno LIKE ?", buffer.String()).Joins("left join cases as c on c.id = case_groups.case_id").Select("case_groups.title, case_id as id, refno as grno, c.scra, c.date, c.topic, c.syllabus,c.body,c.status").Scan(&casegroup)
+	db.Table("case_groups").Where("refno LIKE ?", buffer.String()).Joins("left join cases as c on c.id = case_groups.case_id").Select("case_groups.title, c.id, refno as grno, c.scra, c.date, c.topic, c.syllabus,c.body,c.status").Scan(&casegroup)
 
 	tempResult = append(tempResult, syllabus...)
 	tempResult = append(tempResult, title...)
@@ -49,6 +50,9 @@ func searchCases(c *gin.Context) {
 
 		} else {
 			encountered[v.ID] = true
+			db.Table("case_groups").Where("case_id = ?", v.ID).Select("case_groups.refno, case_groups.title").Scan(&childs)
+			v.Child = append(v.Child, childs...)
+			// fmt.Println(children)
 			result = append(result, v)
 		}
 	}

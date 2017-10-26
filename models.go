@@ -60,10 +60,12 @@ type CaseResult struct {
 	Syllabus string
 	Body     string
 	Status   string
-	Children []struct {
-		refno string
-		title string
-	}
+	Child    []Children
+}
+
+type Children struct {
+	Refno string
+	Title string
 }
 
 type CaseGroup struct {
