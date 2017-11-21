@@ -64,15 +64,24 @@ type CaseResult struct {
 }
 
 type Children struct {
-	Refno string
-	Title string
+	CaseID     uint
+	Refno      string
+	Title      string
+	ShortTitle string
+	Date       string
+	Scra       string
+	Status     string
 }
 
 type CaseGroup struct {
 	gorm.Model
-	CaseID uint   `gorm:"type:int;size:11"`
-	Refno  string `gorm:"type:text"`
-	Title  string `gorm:"type:mediumtext"`
+	CaseID     uint   `gorm:"type:int;size:11"`
+	Refno      string `gorm:"type:text"`
+	Title      string `gorm:"type:mediumtext"`
+	ShortTitle string `gorm:"type:mediumtext"`
+	Date       string `gorm:"type:date"`
+	Scra       string `gorm:"type:text"`
+	Status     string `gorm:"type:text"`
 }
 
 // "MODEL FOR RESULTS ..."

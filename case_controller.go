@@ -3,8 +3,9 @@ package main
 import (
 	"bytes"
 	// "fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func searchCases(c *gin.Context) {
@@ -15,7 +16,6 @@ func searchCases(c *gin.Context) {
 	topic := []CaseResult{}
 	tempResult := []CaseResult{}
 	casegroup := []CaseResult{}
-	childs := []Children{}
 
 	result := []CaseResult{}
 
@@ -50,12 +50,11 @@ func searchCases(c *gin.Context) {
 
 		} else {
 			encountered[v.ID] = true
-			db.Table("case_groups").Where("case_id = ?", v.ID).Select("case_groups.refno, case_groups.title").Scan(&childs)
-			v.Child = append(v.Child, childs...)
-			// fmt.Println(children)
 			result = append(result, v)
 		}
 	}
+
+	result = makeCase(result)
 
 	c.JSON(http.StatusOK, gin.H{"result": result})
 }
@@ -77,4 +76,18 @@ func viewCase(c *gin.Context) {
 func createDraftCase(c *gin.Context) {
 	// db := Database()
 	// newcase := Case{}
+}
+
+func makeCase(caseRes []CaseResult) []CaseResult {
+	db := Database()
+	childs := []Children{}
+	result := []CaseResult{}
+
+	for _, v := range caseRes {
+		db.Table("case_groups").Where("case_id = ?", v.ID).Scan(&childs)
+		v.Child = append(v.Child, childs...)
+		result = append(result, v)
+	}
+
+	return result
 }
